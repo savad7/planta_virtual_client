@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="http://localhost:6080/geoserver/openlayers3/ol.css" type="text/css">
+    <style>
+        .ol-zoom {
+          top: 52px;
+        }
+        .ol-toggle-options {
+          z-index: 1000;
+          background: rgba(255,255,255,0.4);
+          border-radius: 4px;
+          padding: 2px;
+          position: absolute;
+          left: 8px;
+          top: 8px;
+        }
+        #updateFilterButton, #resetFilterButton {
+          height: 22px;
+          width: 22px;
+          text-align: center;
+          text-decoration: none !important;
+          line-height: 22px;
+          margin: 1px;
+          font-family: 'Lucida Grande',Verdana,Geneva,Lucida,Arial,Helvetica,sans-serif;
+          font-weight: bold !important;
+          background: rgba(0,60,136,0.5);
+          color: white !important;
+          padding: 2px;
+        }
+        .ol-toggle-options a {
+          background: rgba(0,60,136,0.5);
+          color: white;
+          display: block;
+          font-family: 'Lucida Grande',Verdana,Geneva,Lucida,Arial,Helvetica,sans-serif;
+          font-size: 19px;
+          font-weight: bold;
+          height: 22px;
+          line-height: 11px;
+          margin: 1px;
+          padding: 0;
+          text-align: center;
+          text-decoration: none;
+          width: 22px;
+          border-radius: 2px;
+        }
+        .ol-toggle-options a:hover {
+          color: #fff;
+          text-decoration: none;
+          background: rgba(0,60,136,0.7);
+        }
+        body {
+            font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+            font-size: small;
+        }
+        iframe {
+            width: 100%;
+            height: 250px;
+            border: none;
+        }
+        /* Toolbar styles */
+        #toolbar {
+            position: relative;
+            padding-bottom: 0.5em;
+        }
+        #toolbar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #toolbar ul li {
+            float: left;
+            padding-right: 1em;
+            padding-bottom: 0.5em;
+        }
+        #toolbar ul li a {
+            font-weight: bold;
+            font-size: smaller;
+            vertical-align: middle;
+            color: black;
+            text-decoration: none;
+        }
+        #toolbar ul li a:hover {
+            text-decoration: underline;
+        }
+        #toolbar ul li * {
+            vertical-align: middle;
+        }
+        #map {
+            clear: both;
+            position: relative;
+            width: 700px;
+            height: 700px;
+            border: 1px solid black;
+        }
+        #wrapper {
+            width: 479px;
+        }
+        #location {
+            float: right;
+        }
+        /* Styles used by the default GetFeatureInfo output, added to make IE happy */
+        table.featureInfo, table.featureInfo td, table.featureInfo th {
+            border: 1px solid #ddd;
+            border-collapse: collapse;
+            margin: 0;
+            padding: 0;
+            font-size: 90%;
+            padding: .2em .1em;
+        }
+        table.featureInfo th {
+            padding: .2em .2em;
+            font-weight: bold;
+            background: #eee;
+        }
+        table.featureInfo td {
+            background: #fff;
+        }
+        table.featureInfo tr.odd td {
+            background: #eee;
+        }
+        table.featureInfo caption {
+            text-align: left;
+            font-size: 100%;
+            font-weight: bold;
+            padding: .2em .2em;
+        }
+    </style>
+    <script src="http://localhost:6080/geoserver/openlayers3/ol.js" type="text/javascript"></script>
+    <script src="assets/javascript/jquery-3.2.1.js"></script>
+    <script src="assets/javascript/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript">
+      function getUrlVars() {
+          var vars = {};
+          var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+              vars[key] = value;
+          });
+          return vars;
+      }
+
+
+      function getUrlParam(parameter){
+          var urlparameter = '';
+          if(window.location.href.indexOf(parameter) > -1){
+              urlparameter = getUrlVars()[parameter];
+              }
+          return urlparameter;
+      }
+    </script>
+    <title>OpenLayers map preview</title>
+  </head>
+  <body>
+
+    
+  </body>
+    
+    <form>
+      <label>radius size</label>
+      <input id="radius" type="range" min="1" max="50" step="1" value="10"/>
+      <label>blur size</label>
+      <input id="blur" type="range" min="1" max="50" step="1" value="20"/>
+    </form>
+
+    <div id="map" style="background-color: black"></div>
+    <div id="map2" style="background-color: black; position:: absolute; margin-right: 0;"></div>
+
+    <div id="wrapper">
+        <div id="location"></div>
+        <div id="scale">
+    </div>
+    <div id="nodelist">
+        <em>Click on the map to get feature info</em>
+    </div>
+    <script type="text/javascript">
+
+      var server = window.location.host;
+      //var server = "localhost:6080";
+      var blur = document.getElementById('blur');
+      var radius = document.getElementById('radius');
+
+      var pureCoverage = false;
+      // if this is just a coverage or a group of them, disable a few items,
+      // and default to jpeg format
+      var format = 'image/png';
+      var bounds = [-43.2357767198501, -22.9226830987681,
+                    -43.2348528922855, -22.9212049017514];
+          
+
+      var mousePositionControl = new ol.control.MousePosition({
+        className: 'custom-mouse-position',
+        target: document.getElementById('location'),
+        coordinateFormat: ol.coordinate.createStringXY(5),
+        undefinedHTML: '&nbsp;'
+      });
+
+      var shopping = getUrlParam('loja');
+      var floor = getUrlParam('floor');
+      var lyr = getUrlParam('layer');
+
+      var untiled = new ol.layer.Image({
+        source: new ol.source.ImageWMS({
+          ratio: 1,
+          url: 'http://'+ server+'/geoserver/brMalls/wms',
+          params: {'FORMAT': format,
+                   'VERSION': '1.1.1',  
+                "LAYERS": 'brMalls:vw_polygon',
+                "exceptions": 'application/vnd.ogc.se_inimage',
+                "viewparams": 'loja:'+shopping+';floor:'+floor+';layer:'+lyr
+                //"viewparams": 'loja:001;floor:5;layer:LUC'
+          }
+        })
+      });
+      var tiled = new ol.layer.Tile({
+        visible: false,
+        source: new ol.source.TileWMS({
+          url: 'http://'+server+'/geoserver/brMalls/wms',
+          params: {'FORMAT': format, 
+                   'VERSION': '1.1.1',
+                   tiled: true,
+                "LAYERS": 'brMalls:vw_polygon',
+                'TILED': true,
+                "exceptions": 'application/vnd.ogc.se_inimage',
+                "viewparams": 'loja:'+shopping+';floor:'+floor+';layer:'+lyr,
+                //"viewparams": 'loja:001;floor:5;layer:LUC',
+             tilesOrigin: -43.2357767198501 + "," + -22.9226830987681
+          }
+        })
+      });
+
+      var vector = new ol.layer.Heatmap({
+        source: new ol.source.Vector({
+          url: 'http://'+server+'/geoserver/brMalls/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=brMalls%3Avw_heatmap_points&outputFormat=application%2Fjson',
+          format: new ol.format.GeoJSON(),
+          params: {
+             tilesOrigin: -43.2357767198501 + "," + -22.9226830987681
+          }
+        }),
+        blur: parseInt(blur.value, 10),
+        radius: parseInt(radius.value, 10),
+        weight: function(feature) {
+          var valor = JSON.parse(feature.U.value);
+          return valor*10;
+        }
+      });
+    
+
+      var projection = new ol.proj.Projection({
+          code: 'EPSG:4326',
+          units: 'degrees',
+          axisOrientation: 'neu',
+          global: true,
+          zoom: 8
+      });
+
+      var map = new ol.Map({
+        controls: ol.control.defaults({
+          attribution: false
+        }).extend([mousePositionControl]),
+        target: 'map',
+        layers: [
+          
+          untiled,
+         // tiled,
+          vector
+          
+        ],
+        view: new ol.View({
+           projection: projection
+        })
+      });
+
+      map.getView().on('change:resolution', function(evt) {
+        var resolution = evt.target.get('resolution');
+        var units = map.getView().getProjection().getUnits();
+        var dpi = 25.4 / 0.28;
+        var mpu = ol.proj.METERS_PER_UNIT[units];
+        var scale = resolution * mpu * 39.37 * dpi;
+        if (scale >= 9500 && scale <= 950000) {
+          scale = Math.round(scale / 1000) + "K";
+        } else if (scale >= 950000) {
+          scale = Math.round(scale / 1000000) + "M";
+        } else {
+          scale = Math.round(scale);
+        }
+        document.getElementById('scale').innerHTML = "Scale = 1 : " + scale;
+      });
+      map.getView().fit(bounds, map.getSize());
+      map.on('singleclick', function(evt) {
+        document.getElementById('nodelist').innerHTML = "Loading... please wait...";
+        var view = map.getView();
+        var viewResolution = view.getResolution();
+        var source = untiled.get('visible') ? untiled.getSource() : tiled.getSource();
+        var url = source.getGetFeatureInfoUrl(
+          evt.coordinate, viewResolution, view.getProjection(),
+          {'INFO_FORMAT': 'text/html', 'FEATURE_COUNT': 50});
+        if (url) {
+          document.getElementById('nodelist').innerHTML = '<iframe seamless src="' + url + '"></iframe>';
+        }
+      });
+
+      var blurHandler = function() {
+        vector.setBlur(parseInt(blur.value, 10));
+      };
+      blur.addEventListener('input', blurHandler);
+      blur.addEventListener('change', blurHandler);
+
+      var radiusHandler = function() {
+        vector.setRadius(parseInt(radius.value, 10));
+      };
+      radius.addEventListener('input', radiusHandler);
+      radius.addEventListener('change', radiusHandler);
+    </script>
+  </body>
+</html>

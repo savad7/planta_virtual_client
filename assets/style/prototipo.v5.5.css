@@ -1,0 +1,129 @@
+
+
+
+
+  #cesiumContainer {
+      position: absolute;
+      top: 0;
+      height: 100% ;
+      width: 100% ;
+      margin: 0;
+      overflow: hidden;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #FFFFFF;
+      left: 0px;
+      z-index: 0;
+
+  }
+
+  .menuClose{
+      position:absolute; 
+      border : 1px solid grey; 
+      background-color: grey; 
+      width: 250px; 
+      height: 100%;
+      left: -125px;
+      -webkit-transform: translate(-125px,0px);
+      -moz-transform: translate(-125px,0px);
+      -o-transform: translate(-125px,0px);
+      -ms-transform: translate(-125px,0px);
+      transform: translate(-125px,0px);
+      -webkit-transition: all 1s ease-in-out;
+      -moz-transition: all 1s ease-in-out;
+      -o-transition: all 1s ease-in-out;
+      transition: all 1s ease-in-out;
+      z-index: 3;
+  }
+
+  .menuOpen{
+    position:absolute;
+    width: 250px;
+    height: 100%;
+    left: 0px;
+    background-color: grey;
+    //border:2px solid black; 
+    -webkit-transform: translate(0px,0px);
+    -moz-transform: translate(0px,0px);
+    -o-transform: translate(0px,0px);
+    -ms-transform: translate(0px,0px);
+    transform: translate(0px,0px);
+    -webkit-transition: all 1s ease-in-out;
+    -moz-transition: all 1s ease-in-out;
+    -o-transition: all 1s ease-in-out;
+    transition: all 1s ease-in-out;
+    z-index: 3;
+    
+  }
+
+  #menuArea{
+    overflow-x: hidden;
+    overflow-y: visible;
+    height: 100%;
+  }
+
+  #btnMenu{
+    position:absolute; 
+    right: -50px;
+    width: 50px; 
+    height: 50px; 
+    background-color: grey;
+    cursor: pointer;
+    z-index: 3;
+
+  }
+
+  body {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+      font-size: 12px;
+      color: white;
+      background-color: grey;
+  }
+
+
+
+#divPopup{
+  position:absolute; 
+  right:0px; 
+  top:100px; 
+  width: 400px; 
+  height: 400px; 
+  background-color: grey; 
+  overflow: auto; 
+  visibility: hidden; 
+  z-index: 0;
+}
+
+#fieldsLayers{
+
+}
+
+#fieldsObjs{
+  
+}
+
+#popUpClose{
+  position: absolute; 
+  right:0px; 
+  top: 0; 
+  width: 20px; 
+  height: 20px; 
+  color: #ffffff; 
+  background-color: black; 
+  cursor: pointer;
+}
+
+.inputViewMode{
+  background: transparent;
+  border: none;
+  color: #ffffff;
+}
+
+.inputEditMode{
+  background-color: #ffffff;
+  border: 1;
+  color: #000000;
+}

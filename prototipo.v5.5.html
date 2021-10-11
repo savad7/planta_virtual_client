@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Prototipo v.5.5</title>
+  <script src="assets/Cesium/Cesium.js"></script>
+  <script src="assets/javascript/jquery-3.2.1.js"></script>
+  <script src="assets/javascript/jquery-3.2.1.min.js"></script>
+  <script src="assets/javascript/prototipo.v5.5.js"></script>
+
+  <link rel="stylesheet" href="assets/style/prototipo.v5.5.css">
+  <link rel="stylesheet" href="assets/style/abas.css">
+  <style>
+    @import url(assets/Cesium/Widgets/CesiumWidget/CesiumWidget.css);  
+    @import url(assets/Cesium/Widgets/Animation/Animation.css); 
+    @import url(assets/Cesium/Widgets/Timeline/Timeline.css);
+    @import url(assets/Cesium/Widgets/BaseLayerPicker/BaseLayerPicker.css);  
+    @import url(assets/Cesium/Widgets/CesiumInspector/CesiumInspector.css); 
+    @import url(assets/Cesium/Widgets/FullscreenButton/FullscreenButton.css);
+    @import url(assets/Cesium/Widgets/Geocoder/Geocoder.css);  
+    @import url(assets/Cesium/Widgets/InfoBox/InfoBox.css);
+
+    @import url(assets/Cesium/Widgets/NavigationHelpButton/NavigationHelpButton.css);  
+    @import url(assets/Cesium/Widgets/PerformanceWatchdog/PerformanceWatchdog.css); 
+    @import url(assets/Cesium/Widgets/SceneModePicker/SceneModePicker.css);
+    @import url(assets/Cesium/Widgets/SelectionIndicator/SelectionIndicator.css);  
+    @import url(assets/Cesium/Widgets/Viewer/Viewer.css); 
+    @import url(assets/Cesium/Widgets/VRButton/VRButton.css);
+    @import url(assets/Cesium/Widgets/lighter.css);  
+    @import url(assets/Cesium/Widgets/lighterShared.css); 
+    @import url(assets/Cesium/Widgets/shared.css);
+    @import url(assets/Cesium/Widgets/widgets.css);
+
+
+  </style>
+  <script>
+    var trackHome = null;
+
+  </script>
+</head>
+<body>
+
+  <div id="cesiumContainer"> 
+    
+
+    <div id="menuContainer" class="menuOpen">
+      <div id="btnMenu" onclick="controlMenu()"><center><img src="assets/images/menu-button.png" width="50px" height="50px"></center></div>
+      <div id="menuArea">
+      <center>
+      <br>
+      <img src="assets/images/logo-blue.png">
+      <h1>Transformacao Digital</h1>
+      
+      </center>
+      
+        <fieldset>
+          <legend>Shopping</legend>
+          Numero: <select id="txtLoja" name="txtLoja">
+          </select>
+          <br>
+          Pavimento: <select id="pavimento" name="pavimento"></select>
+          <br>
+          <input type="button" name="btnLoad" value="Carregar" onclick="init(document.getElementById('pavimento').options[document.getElementById('pavimento').selectedIndex].value, document.getElementById('txtLoja').options[document.getElementById('txtLoja').selectedIndex].value);">
+        </fieldset>
+        <br>
+        
+        <fieldset>
+          <legend>Camadas</legend>
+          <table id="tbLayer" border="1">
+            
+          </table>
+        </fieldset>
+        <br>
+        <input type="radio" id="modo1" name="modo" value="design" checked="true">Design<br>
+        <input type="radio" id="modo2" name="modo" value="distancia">Distancia<br>
+        <input type="radio" id="modo3" name="modo" value="operacao">Operacao<br>
+        <br>
+        <br>
+        <br>
+        <br>
+        dfx: <input type="text" name="urlDxf" id="urlDxf" value="">  
+        pdf: <input type="text" name="urlPdf" id="urlPdf" value="">
+
+        <div style="visibility: hidden;">
+          <table id="divShelves">
+
+          </table>  
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="divPopup">
+    <div id="popUpClose" onclick="document.getElementById('popUpCont').innerHTML=''; document.getElementById('divPopup').style.visibility='hidden';">X</div>
+    <div id="popTemplate" style="position: absolute; visibility: hidden; width:250px; height: 300px; z-index: 3; background-color: #000005; overflow: auto;">
+      <div><table id="tbObjTemplates"></table></div>
+    </div>
+    <div id="popUpCont">
+      
+    </div>
+
+  </div>
+  <script>
+
+
+var camDimCount = 0;
+
+var viewer = new Cesium.Viewer('cesiumContainer', {
+      /*imageryProvider : new Cesium.ArcGisMapServerImageryProvider({
+        url : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer'
+      }),*/
+      imageryProvider : '',
+      //sceneMode : Cesium.SceneMode.SCENE3D,
+      //sceneMode : Cesium.SceneMode.COLUMBUS_VIEW,
+      baseLayerPicker : false,
+      animation : false,
+      fullscreenButton : false,
+      geocoder : false,
+      homeButton : false,
+      infoBox : false,
+      sceneModePicker : false,
+      selectionIndicator : false,
+      timeline : false,
+      navigationHelpButton : true,
+      navigationInstructionsInitiallyVisible : false,
+      shadows : true,
+      terrainShadows: Cesium.ShadowMode.DISABLED,
+      vrButton: true,
+      requestRenderMode : true,
+      skyAtmosphere : false
+      
+  });
+  
+
+
+
+//getAuthorization('1', '7777');
+
+
+var credit = new Cesium.Credit('', 'assets/images/logo-blue.png');
+
+viewer.scene.frameState.creditDisplay.addDefaultCredit(credit)
+
+var entidades = viewer.entities;
+
+var objsMedidos;
+
+var scene = viewer.scene;
+
+scene.skyBox.show = false;
+//scene.backgroundColor = Cesium.Color.CORNFLOWERBLUE;
+scene.backgroundColor = Cesium.Color.fromCssColorString("#FFFFFF")
+
+/*var stages = viewer.scene.postProcessStages;
+var silhouette = stages.add(Cesium.PostProcessStageLibrary.createSilhouetteStage());
+silhouette.uniforms.color = Cesium.Color.LIME;*/
+
+init('1', '001');
+
+
+handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+
+var lastPicked;
+var dinamicColor = Cesium.Color.RED;
+
+// Information about the currently highlighted feature
+var highlighted = {
+    feature: undefined,
+    originalColor: new Cesium.Color()
+};
+
+// Color a feature yellow on hover.
+//viewer.screenSpaceEventHandler.setInputAction(function onMouseMove(movement) {
+//    // If a feature was previously highlighted, undo the highlight
+//    if (Cesium.defined(highlighted.feature)) {
+//        highlighted.feature.color = highlighted.originalColor;
+//        highlighted.feature = undefined;
+//    }
+//
+//    // Pick a new feature
+//    var pickedFeature = viewer.scene.pick(movement.endPosition);
+//    if (!Cesium.defined(pickedFeature)) {
+//        return;
+//    }
+//
+//    // Highlight the feature
+//    highlighted.feature = pickedFeature;
+//    Cesium.Color.clone(pickedFeature.color, highlighted.originalColor);
+//    pickedFeature.color = Cesium.Color.YELLOW;
+//}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+
+handler.setInputAction(function onMouseMove(movement) {
+  var pickedObject = viewer.scene.pick(movement.endPosition);
+  
+  if (Cesium.defined(pickedObject)){
+    /*dinamicColor = entidades.getById(pickedObject.id.id).polygon.material._color._value;
+    if(entidades.getById(pickedObject.id.id).parent.id == "objsMedidos"){
+      if (pickedObject == lastPicked){
+        entidades.getById(lastPicked.id.id).point.color = Cesium.Color.RED;
+      }
+     
+    }*/
+
+    if(entidades.getById(pickedObject.id.id).parent.id == "LUC"){
+      if (pickedObject == lastPicked){
+        
+        //entidades.getById(lastPicked.id.id).polygon.material = Cesium.Color.fromCssColorString('#8A2BE2');
+
+        lastPicked.color = Cesium.Color.YELLOW;
+      }
+     
+    }
+  }
+
+  if (pickedObject != lastPicked){
+  /*  if (Cesium.defined(lastPicked)){
+      if(entidades.getById(lastPicked.id.id).parent.id == "objsMedidos"){
+        entidades.getById(lastPicked.id.id).point.color = Cesium.Color.YELLOW;
+      }
+    }*/
+
+    if (Cesium.defined(lastPicked)){
+      if(entidades.getById(lastPicked.id.id).parent.id == "LUC"){
+        //entidades.getById(lastPicked.id.id).polygon.material = Cesium.Color.fromCssColorString('#FFFFFF');
+        lastPicked.color = Cesium.Color.BLUE;
+      }
+    }
+  } 
+  lastPicked = pickedObject;
+
+},Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+
+handler.setInputAction(function onLeftClick(click) {
+    var pickedObject = scene.pick(click.position);
+    if (Cesium.defined(pickedObject)) {
+        //alert(pickedObject.id.id);
+        //alert(entidades.getById(pickedObject.id.id).description);
+        //var modo = "";
+        
+        
+        if (document.getElementById('modo1').checked) {
+          modo = document.getElementById('modo1').value;
+        }
+        if (document.getElementById('modo2').checked) {
+          modo = document.getElementById('modo2').value;
+        }
+        if (document.getElementById('modo3').checked) {
+          modo = document.getElementById('modo3').value;
+        }
+        //alert(modo);
+        if (modo == "design"){
+          document.getElementById('popUpCont').innerHTML=entidades.getById(pickedObject.id.id).description; 
+          document.getElementById('divPopup').style.visibility='visible';
+          
+          if (entidades.getById(pickedObject.id.id).parent.id == "SHELF"){
+            //getGondAssoc(pickedObject.id.id); carregaProd('tbProdutos', pickedObject.id.id)
+          }
+        }
+
+        if (modo == "distancia"){
+          //alert(pickedObject.id.polygon.hierarchy._value.positions.length);
+          
+          if(objDistancia.objetos == 0){
+            objsMedidos = entidades.add(new Cesium.Entity({id:"objsMedidos"}));
+          }
+
+          if (entidades.getById(pickedObject.id.id).parent.id == "objsMedidos"){
+              if (objDistancia.pontos.length <= 1){
+                objDistancia.pontos.push(pickedObject.id._position._value);
+                entidades.getById(lastPicked.id.id).point.color = Cesium.Color.RED;
+              }
+              if (objDistancia.pontos.length == 2){
+                drawDistance();
+              }
+          }else{
+
+            var height = 0;
+            height = pickedObject.id.polygon._height._value;
+            //alert(height);
+            drawPoints(pickedObject.id.polygon.hierarchy._value.positions, height);
+            
+            height = pickedObject.id.polygon._extrudedHeight._value;
+            if (height > objDistancia.height){
+              objDistancia.height = height;
+            }
+            //alert(height);
+            drawPoints(pickedObject.id.polygon.hierarchy._value.positions, height);
+            objDistancia.objetos = objDistancia.objetos + 1;
+
+            if (objDistancia.pontos.length == 2){
+              var lenObjsMedidos = objsMedidos._children.length;
+              for(var i=0; i<=lenObjsMedidos; i++){
+                entidades.remove(objsMedidos._children[i])
+              }
+              entidades.remove(objsMedidos);objsMedidos = null;
+              objDistancia = {"objetos":0,"pontos":[]};
+            }
+          }
+          //}
+
+          //alert(objDistancia.objetos);
+          
+
+        }
+
+        if (modo == "operacao"){
+          alert(pickedObject.id.id);
+
+        }
+    }
+}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+
+  </script>
+  <div id="measureContainer"></div>
+</body>
+</html>

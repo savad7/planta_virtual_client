@@ -1,0 +1,53 @@
+/*-------------- ABAS --------------*/
+  .abas {
+    position: relative;
+    left:-40px;
+  }
+
+  .aba {
+    display: inline;
+    left:-40px;
+  }
+
+ 
+  .aba > p {
+    float: left;
+    padding: 0.5em 1em;
+    background: linear-gradient(#EEE, #000);
+    /*border-width: 1px;
+    border-style: solid;
+    border-color: #EEE #EEE #000;*/
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+  }
+
+  .aba:not(:target) a {
+    border-bottom: 0 none;
+  }
+
+  .aba:target p, p:hover {
+    background: grey;
+  }
+
+  .aba:active {
+    background: black;
+  }
+
+
+  .abaConteudo {
+    position: absolute;
+    width: 400px;
+    height: 300px;
+    left: 40px;
+    top: calc(3em + 1px); /* altura do link + bordas */
+    z-index: -2;
+    /*border: 1px solid #CCC;*/
+    background-color: black;
+  }
+
+  .aba:target .abaConteudo {
+    z-index: -1;
+  }
+
+
+  /*-------------- ABAS --------------*/

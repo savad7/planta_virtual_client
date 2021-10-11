@@ -1,0 +1,55 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--<script src="https://cesiumjs.org/releases/1.61/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesiumjs.org/releases/1.61/Build/Cesium/Widgets/widgets.css" rel="stylesheet">-->
+
+  <script src="assets/javascript/prototipo.v1.js"></script>
+  <script src="assets/Cesium/Cesium.js"></script>
+  <link href="assets/Cesium/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer" style="width: 700px; height:400px"></div>
+  <script>
+    
+    
+
+    var viewer = new Cesium.Viewer('cesiumContainer', {
+      /*imageryProvider : new Cesium.ArcGisMapServerImageryProvider({
+        url : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer'
+      }),*/
+      imageryProvider : [],
+      //sceneMode : Cesium.SceneMode.SCENE3D,
+      sceneMode : Cesium.SceneMode.COLUMBUS_VIEW,
+      baseLayerPicker : false,
+      animation : false,
+      fullscreenButton : false,
+      geocoder : false,
+      homeButton : false,
+      infoBox : false,
+      sceneModePicker : false,
+      selectionIndicator : false,
+      timeline : false,
+      navigationHelpButton : true,
+      navigationInstructionsInitiallyVisible : false,
+      shadows : true,
+      vrButton: true,
+      requestRenderMode : true
+      
+  });
+  
+
+
+var scene = viewer.scene;
+
+var entidades = viewer.entities;
+
+
+scene.skyBox.show = false;
+scene.backgroundColor = Cesium.Color.CORNFLOWERBLUE;
+
+
+
+  </script>
+</body>
+</html>
